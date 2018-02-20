@@ -17,17 +17,11 @@ friends=[{'name':'Logan','age':26,'rating':5.8,'is_online':True,'chats':[]},{'na
 
 def load_friends():
     with open('friends.csv', 'rb') as friends_data:
-        reader = csv.reader(friends_data)
+        reader = (csv.reader(friends_data))
 
-        for row in reader[4:]:
-            if row:
-                name=row[0]
+        for row in reader:
 
-                age=(row[2])
-                rating = (row[3])
-                is_online=[4]
-
-            spy = Spy(name,age,rating,is_online)
+            spy = Spy(row[0],row[1],row[2],row[3])
             friends.append(spy)
 
 load_friends()
@@ -39,13 +33,21 @@ def load_chats():
         reader = list(csv.reader(chats_data))
 
         for row in reader[4:]:
-            if row:
-                name_of_sender = row[0]
-                message_sent_to = row[1]
-                text = row[2]
-                sent_by_me = row[4]
-                new_chat = ChatMessage(name_of_sender, message_sent_to, text, sent_by_me)
-                chats.append(new_chat)
+                cm = ChatMessage(row[0],row[1])
+                chats_data.append(cm)
+
+
+#func to load history
+
+def load_history():
+    with open('history.csv','rb') as history_data:
+        reader = csv.reader(history_data)
+        for row in reader:
+
+            history.append(load_chats())
+
+load_history()
+
 
 #func to add status
 
@@ -76,15 +78,11 @@ def add_status(C_S_M):
 #func to add a friend
 
 def add_friend():
-    frnd = {
-        'name': '',
-        'age': 0,
-        'rating': 0.0,
-        'is_online': True
-    }
+
+    frnd=Spy('','',0,0.0)
     frnd.name = raw_input("Write your friend's name")
-    friend_sal = raw_input("Mr. or Ms.")
-    frnd.name = friend_sal+" "+frnd.name
+    frnd.sal = raw_input("Mr. or Ms.")
+    frnd.name = frnd.sal+" "+frnd.name
     frnd.age = input("Enter Age")
     frnd.rating = input("Enter rating of your friend")
     frnd.online = True
@@ -93,7 +91,7 @@ def add_friend():
         friends.append(frnd)
         with open('friends.csv', 'a') as friends_data:
          writer = csv.writer(friends_data)
-        writer.writerow([frnd.name, frnd.rating, frnd.age, spy.is_online])
+         writer.writerow([frnd.name, frnd.rating, frnd.age, frnd.online])
     else:
         print("Friend with these values cannot be added ")
         return  len(friends)
@@ -101,7 +99,7 @@ def add_friend():
 def select_frnd():
     serial_no=1
     for frnd in friends:
-        print str(serial_no)+" "+ frnd['name']
+        print str(serial_no)+" "+ frnd.name
         serial_no=serial_no+1
 
     user_selected_frnd=input("Whhich one u want to send msg to?")
@@ -114,29 +112,25 @@ def send_message():
     original_image=raw_input("Whats your original image")
     output_path="output.png"
     Steganography.encode(original_image,output_path,message)
-    new_chat={
-        "message":message,
-        "time":datetime.now(),
-        "sent_by_me":True
-    }
-    friends[selected_frnd]['chats'].append(new_chat)
+    new_chat=ChatMessage("messege","sent_by_me")
+    friends.append(new_chat)
     print "message encrypted"
+    with open('chats.csv','a') as chats_data:
+        writer=csv.writer(chats_data)
+        writer.writerow(message)
 
 def read_message():
     chosen_frnd=select_frnd()
     output_path=raw_input("Name of the image to be decoded: ")
     secret_text=Steganography.decode(output_path)
-    new_chat = {
-        "message": secret_text,
-        "time": datetime.now(),
-        "sent_by_me": False
-    }
-    friends[chosen_frnd]['chats'].append(new_chat)
+    new_chat=ChatMessage("messege","sent_by_me")
+    friends.append(new_chat)
 
     print "Your message is "+ secret_text
+    with open('chats.csv',) as chats_data:
+        writer = csv.writer(chats_data)
+        writer.writerow()
 
-
-#func to load chats
 
 
 
@@ -153,7 +147,7 @@ def start_chat(spy_name, spy_rating, spy_age):
 
         elif menu_choice==2:
             no_of_friend = add_friend()
-            print "I have "+ str(no_of_friend)+" frirnds"
+            print "I have "+ str(no_of_friend)+" friends"
         elif menu_choice==3:
             send_message()
             #print "we are going to send message to "+ friends[select_frnd()]
